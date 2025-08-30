@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# ctx - Context7 Documentation Gatherer CLI wrapper
+# This script activates the virtual environment and runs the main.py script
+
+# Absolute path to the project directory (set during installation)
+PROJECT_DIR="/Users/pcstyle/contex7-gather/cli"
+
+# Path to the virtual environment and main script
+VENV_PATH="$PROJECT_DIR/venv"
+MAIN_SCRIPT="$PROJECT_DIR/main.py"
+
+# Check if virtual environment exists
+if [ ! -d "$VENV_PATH" ]; then
+    echo "❌ Virtual environment not found at: $VENV_PATH"
+    echo "Please run setup first:"
+    echo "  cd $PROJECT_DIR"
+    echo "  python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt"
+    exit 1
+fi
+
+# Check if main script exists
+if [ ! -f "$MAIN_SCRIPT" ]; then
+    echo "❌ Main script not found at: $MAIN_SCRIPT"
+    exit 1
+fi
+
+# Check if .env file exists (warn but don't fail)
+if [ ! -f "$PROJECT_DIR/.env" ]; then
+    echo "⚠️  Warning: .env file not found. Make sure CONTEXT7_API_KEY is configured."
+    echo "   Copy .env.example to .env and add your API key."
+fi
+
+# Activate virtual environment and run the script
+source "$VENV_PATH/bin/activate"
+
+# Check if activation was successful
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to activate virtual environment"
+    exit 1
+fi
+
+# Run the main script with all passed arguments
+python "$MAIN_SCRIPT" "$@"
+
+# Capture the exit code from the Python script
+EXIT_CODE=$?
+
+# Deactivate virtual environment (optional, as the shell will close anyway)
+deactivate 2>/dev/null
+
+# Exit with the same code as the Python script
+exit $EXIT_CODE
